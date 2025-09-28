@@ -4,7 +4,7 @@ export interface IOrganization extends Document {
   name: string;
   description: string;
   status: "pending" | "approved" | "blocked";
-  createdBy: Types.ObjectId;
+  admin: Types.ObjectId;
   contactEmail: string;
   website?: string;
   phone?: string;
@@ -23,7 +23,7 @@ const organizationSchema = new Schema<IOrganization>(
       enum: ["pending", "approved", "blocked","unblocked"],
       default: "pending",   
     },
-    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    admin: { type: Schema.Types.ObjectId, ref: "User", required: true },
     contactEmail: { type: String, required: true },
     website: { type: String },
     phone: { type: String },

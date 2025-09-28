@@ -1,11 +1,14 @@
 import mongoose from "mongoose";
 
 const connectDB = (() =>{
-mongoose.connect("mongodb://127.0.0.1:27017/skill-hubdb").then(() =>{
-    console.log("mongodb is connected")
-}).catch(() =>{
-    console.log("mongodb is not connected")
-})
+mongoose.connect("mongodb://localhost:27017/skill-hubdb")
+  .then(() => {
+    console.log("Connected to MongoDB");
+  })
+  .catch((err) => {
+    console.error("MongoDB connection error:", err);
+  });
+
     
 })
 export default connectDB   

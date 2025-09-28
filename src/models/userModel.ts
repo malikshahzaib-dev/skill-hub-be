@@ -1,9 +1,11 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IUser extends Document {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
+  confirmPassword?: string;
   role: string,
   status: string,
   resetOtp:number,
@@ -11,10 +13,12 @@ export interface IUser extends Document {
 }
 
 const userSchema = new Schema<IUser>({
-  name: { type: String, required: true },
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ["admin", "organization admin", "applicant"], default: "applicant" },
+  confirmPassword: { type: String },
+  role: { type: String, enum: ["admin", "organization", "applicant"], default: "applicant" },
   status: { type: String, enum: ["Active", "Pending", "Inactive"], default: "Pending" },
   resetOtp:{type:Number},
   otpExpires:{type:Number}

@@ -16,4 +16,3 @@ res.status(err.statusCode).json({
 };
 
 export default globalErrorHandler;
-
