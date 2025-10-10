@@ -4,7 +4,6 @@ import applicant from "../models/applicantModel";
 import Applicant from "../models/applicantModel";
 import {Request,Response} from "express"
 import AppError from "../utils/appError";
-import Job from "../models/jobModel";
 
 
 const applicantRouter = express.Router()
@@ -18,15 +17,12 @@ applicantRouter.get("/",async(req:Request,res:Response) =>{
 
 
 applicantRouter.post("/",async(req:Request,res:Response,next:NextFunction) => {
-    const {contactNumber,address,education,skills,dateofBirth,resume} = req.body
-    const jobId = req.params.job.id
-    const foundApplicant = await Applicant.findOne({contactNumber,resume})
+    const {contactNumber,address,education,skills,dateofBirth,resume,experience} = req.body
+    const foundApplicant = await Applicant.findOne({contactNumber})
+    console.log(foundApplicant,"foundapplicant")
+
     if(foundApplicant){
         return next(new AppError("applicant already exists",400))
-    }
-    const foundJob = await Job.findById(jobId)
-    if(!foundJob){
-        return next(new AppError("job not found",404))
     }
 
 
@@ -36,8 +32,10 @@ applicantRouter.post("/",async(req:Request,res:Response,next:NextFunction) => {
         education,
         skills,
         dateofBirth,
-        resume
+        resume,
+        experience
     })
+    console.log(createdApplicant,"createdApplicant")
     res.status(201).json({
         data:createdApplicant,
         message:"applicant creation successful",
@@ -66,7 +64,7 @@ applicantRouter.post("/",async(req:Request,res:Response,next:NextFunction) => {
         const updatedApplicant = await applicant.findByIdAndUpdate(id,data,{
             returnDocument:"after"
         })
-        res.send({message:"applicant updated successfully",success:true})
+        res.send({message:"applicant updated successfully",success:true,data:updatedApplicant})
 
         })
 
@@ -78,7 +76,7 @@ applicantRouter.post("/",async(req:Request,res:Response,next:NextFunction) => {
                 return next(new AppError("applicant not found",404))
             }
             const deletedApplicant = await applicant.findByIdAndDelete(id)
-            res.send(message:"applicant deleed successfully")
+            res.send({message:"applicant deleed successfully",deletedApplicant})
         })
 
 

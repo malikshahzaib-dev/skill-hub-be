@@ -3,6 +3,7 @@ import userRouter from "../routes/userRouter"
 import organizationRouter from "../routes/organizationRouter";
 import jobRouter from "../routes/jobRouter";
 import applicationRouter from "../routes/applicationRouter";
+import applicantRouter from "../routes/applicantRouter";
 
 const router = express.Router();
 
@@ -10,8 +11,8 @@ const router = express.Router();
 router.use("/users",userRouter)
 router.use("/organization",organizationRouter)
 router.use("/job",jobRouter)
+router.use("/applicant",applicantRouter)
 router.use("/application",applicationRouter)    
-router.use("/applicant",applicationRouter)
 
 
 
