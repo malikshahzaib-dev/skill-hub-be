@@ -8,8 +8,6 @@ export interface IUser extends Document {
   confirmPassword?: string;
   role: string,
   status: string,
-  resetOtp:number,
-  otpExpires:number
 }
 
 const userSchema = new Schema<IUser>({
@@ -20,8 +18,6 @@ const userSchema = new Schema<IUser>({
   confirmPassword: { type: String },
   role: { type: String, enum: ["admin", "organization", "applicant"], default: "applicant" },
   status: { type: String, enum: ["Active", "Pending", "Inactive"], default: "Pending" },
-  resetOtp:{type:Number},
-  otpExpires:{type:Number}
 });
 
 const User = mongoose.model<IUser>("User", userSchema);

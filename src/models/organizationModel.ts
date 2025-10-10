@@ -21,7 +21,7 @@ const organizationSchema = new Schema<IOrganization>(
     status: {
       type: String,
       enum: ["pending", "approved", "blocked","unblocked"],
-      default: "pending",   
+      default: "approved",   
     },
     admin: { type: Schema.Types.ObjectId, ref: "User", required: true },
     contactEmail: { type: String, required: true },
@@ -33,9 +33,6 @@ const organizationSchema = new Schema<IOrganization>(
   { timestamps: true }
 );
 
-const Organization = mongoose.model<IOrganization>(
-  "Organization",
-  organizationSchema
-);
+const Organization = mongoose.model<IOrganization>("Organization",organizationSchema);
 
 export default Organization;

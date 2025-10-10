@@ -8,7 +8,6 @@ export interface IJob extends Document {
     jobDescription: string,
     requirements: string[],
     responsibilities?:string[],
-    salary: number,
     organizationId: Types.ObjectId,
     createdBy: Types.ObjectId,
     location:string,
@@ -16,7 +15,7 @@ export interface IJob extends Document {
     minimumSalary?:number,
     maximumSalary?:number   ,
     benefits?:string[]  ,
-    applicationClosingDate?:Date
+    applicationclosingdate?:Date
 
 }
 const JobSchema = new Schema<IJob>(
@@ -26,16 +25,15 @@ const JobSchema = new Schema<IJob>(
         jobDescription: { type: String, required: true },
         jobType:{type:String},
         requirements: { type: [String], required: true },
-        salary: { type: Number, required: true },
         responsibilities:{type:[String]},
         status: { type: String, enum: ["Active", "Inactive"], default: "Active" },
-        organizationId: { type: Schema.Types.ObjectId, ref: "organization", required: true },
+        organizationId: { type: Schema.Types.ObjectId, ref: "organization", required: true },   
         createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
         location:{type:String},
         minimumSalary:{type:Number},
         maximumSalary:{type:Number},
         benefits:{type:[String]},
-        applicationClosingDate :{type:Date}
+        applicationclosingdate :{type:Date}
     },
 
     { timestamps: true }

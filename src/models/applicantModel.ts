@@ -1,39 +1,27 @@
-import mongoose, { Document, Schema, Types } from "mongoose";
+import mongoose, { Schema } from "mongoose"
 
 
 
 
-export interface IApplication extends Document {
 
-    fullName: string,
-    email: string,
-    experience: number,
-    age: number,
-    resume: string,
-    jobId: Types.ObjectId,
-    skills: string[],
-    status: string
+export interface IApplicant extends Document{
+    education:string,
+    contactNumber:string,
+    experience:number,
+    dateofBirth:Date,
+    resume:File,
+    address:string,
+    skills:[]
 
 }
-
-const applicationSchema = new Schema<IApplication>({
-
-    fullName: { type: String, required: true },
-    email: { type: String, required: true },
+const applicationSchema = new Schema<IApplicant>({
+    education: { type: String, required: true },
+    contactNumber: { type: String, required: true },
     experience: { type: Number, required: true },
-    age: { type: Number, required: true },
-    resume: { type: String, required: true },
-    jobId: { type: Schema.Types.ObjectId, ref: "Job" },
-    skills: [{ type: String }],
-status: { 
-  type: String, 
-  enum: ["pending", "approved", "rejected", "hired"], default: "pending"}
-
-
-},
-    { timestamps: true }
-
-)
-const Application = mongoose.model("Applicant", applicationSchema)
-
-export default Application
+    dateofBirth: { type: Date, required: true },
+    resume: { type: File, required: true },
+    address: { type: String, required: true },
+    skills: { type: [String], required: true }
+})
+const Applicant = mongoose.model("Applicant",applicationSchema)
+export default Applicant

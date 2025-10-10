@@ -10,7 +10,10 @@ const router = express.Router();
 router.use("/users",userRouter)
 router.use("/organization",organizationRouter)
 router.use("/job",jobRouter)
-router.use("/application",applicationRouter)
+router.use("/application",applicationRouter)    
+router.use("/applicant",applicationRouter)
+
+
 
 
 
