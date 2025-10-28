@@ -30,6 +30,7 @@ jobRouter.get(
   catchasync(async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
     const foundJob = await Job.findById(id);
+    console.log("foundJobbb", foundJob);
     if (!foundJob) {
       return next(new AppError("job not found", 404));
     }
@@ -57,7 +58,8 @@ jobRouter.post(
       department,
       responsibilities,   
       requirements,
-      location
+      location,
+      jobType
 
     } = req.body;
     console.log("req.body", req.body);
@@ -89,7 +91,8 @@ jobRouter.post(
       status,
       department,
       responsibilities,
-      requirements
+      requirements,
+      jobType
     });
     console.log("createdJob", createdJob);
     res
@@ -163,3 +166,6 @@ jobRouter.delete(
 
 
 export default jobRouter;
+
+
+

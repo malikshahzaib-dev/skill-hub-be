@@ -1,26 +1,35 @@
 import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import User from "../models/userModel"; // adjust path to your User model
+import AppError from "../utils/appError";
 
-const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  const authHeader = req.headers.authorization;
-  console.log(authHeader, "auth");
+interface AuthRequest extends Request {
+  user?: any; // you can type this properly with your User model if using TypeScript
+}
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).send({ message: "no token provide" });
-  }
-
-  const token = authHeader.split(" ")[1];
-
-  jwt.verify(token, process.env.JWT_SECRET as string, (err, decoded) => {
-    if (err) {
-      return res.send({ message: "Invalid  token" });
+const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return next(new AppError("No token provided", 401));
     }
 
-    (req as any).user = decoded as JwtPayload;
-    console.log("Decoded user", decoded);
+    const token = authHeader.split(" ")[1];
 
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
+
+    // Find user in DB
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return next(new AppError("User not found", 401));
+    }
+
+    // Attach full user to request
+    req.user = user;
     next();
-  });
+  } catch (err: any) {
+    return next(new AppError("Authentication failed", 401));
+  }
 };
 
 export default authMiddleware;

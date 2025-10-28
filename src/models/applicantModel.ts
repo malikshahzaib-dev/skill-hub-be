@@ -10,8 +10,9 @@ export interface IApplicant extends Document{
     experience:string,
     dateofBirth:Date,
     resume:string,
-    address:string,
-    skills:[]
+    address:string, 
+    skills:[],
+    user:Schema.Types.ObjectId
 
 }
 const applicantSchema = new Schema<IApplicant>({
@@ -21,7 +22,8 @@ const applicantSchema = new Schema<IApplicant>({
     dateofBirth: { type: Date, required: true },
     resume: { type: String, required: false },
     address: { type: String, required: true },
-    skills: { type: [String], required: true }
+    skills: { type: [String], required: true },
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true }
 })
 const Applicant = mongoose.model("Applicant",applicantSchema)
 export default Applicant
