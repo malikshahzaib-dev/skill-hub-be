@@ -12,7 +12,7 @@ export interface IOrganization extends Document {
   industry?: string;
   createdAt: Date;
   updatedAt: Date;
-}
+} 
 
 const organizationSchema = new Schema<IOrganization>(
   {
@@ -21,7 +21,7 @@ const organizationSchema = new Schema<IOrganization>(
     status: {
       type: String,
       enum: ["pending", "approved", "blocked","unblocked"],
-      default: "approved",   
+      default: "pending",   
     },
     admin: { type: Schema.Types.ObjectId, ref: "User", required: true },
     contactEmail: { type: String, required: true },

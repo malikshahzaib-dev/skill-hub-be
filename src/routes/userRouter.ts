@@ -7,6 +7,7 @@ import AppError from "../utils/appError";
 import { generateOTP, verifyOtp } from "../utils/otpService";
 import { sendEmail } from "../utils/emailService";
 import Organization from "../models/organizationModel";
+import Applicant from "../models/applicantModel";
 
 const userRouter = express.Router();
 
@@ -18,13 +19,17 @@ userRouter.post(
   "/login",
   catchasync(async (req: Request, res: Response, next: NextFunction) => {
     const { email, password, role } = req.body;
-
+    
     const hashPassword = md5(password);
+    console.log(hashPassword,"hashpassword")
 
     const foundUser = await User.findOne({ email, password: hashPassword });
     if (!foundUser) {
       return next(new AppError("invalid credentials", 401));
     }
+          //  const isInformationCompleted = Boolean(foundUser?.education && foundUser.contactNumber && foundUser.experience && foundUser.skills && foundUser.dateofBirth && foundUser.resume)
+   
+
     const token = jwt.sign(
       { id: foundUser?._id, email: foundUser?.email },
       process.env.JWT_SECRET as string,
@@ -37,17 +42,30 @@ userRouter.post(
       });
     }
 
+    let applicantInformation = null
+    if(foundUser.role === "applicant"){
+      applicantInformation = await Applicant.findOne({
+        user:foundUser._id
+      })
+    }
+
     res.status(200).json({
       message: "login successful",
       status: "success",
       token: token,
       user: foundUser,
-      isOrganizationComplete:  
+      isOrganizationInformationComplete:  
+      
         foundUser.role === "organization" && organizationInformation
           ? true
           : false,
+        isApplicantInformationComplete:
+          foundUser.role === "applicant" && applicantInformation
+          ?true
+          :false
       
     });
+    
   })
 );
 

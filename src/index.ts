@@ -4,6 +4,8 @@ import connectDB from "./connectDB";
 import router from "./router/route";
 import globalErrorHandler from "./errorHadleng/globalErrorHandling";
 import cors from "cors";
+import multer from "multer";
+
 
 
 dotenv.config();
@@ -15,6 +17,13 @@ app.use(cors());
 
 app.use(express.json());
 app.use("/api", router);
+
+
+const upload = multer({dest:"upload/"})
+app.post("/upload",upload.single("file"),(req,res) => {
+    console.log("single file",req.file)
+    res.send("single file uploaded successfully")
+})
 
 app.get("/", (req: Request, res: Response) => {
     res.send("Server is online");

@@ -1,11 +1,13 @@
 import express, { NextFunction, Request, Response } from "express";
-import applicant from "../models/applicantModel";
 import Job from "../models/jobModel";
 import Application, { IApplication } from "../models/applicationModel";
 import catchasync from "../utils/catchasync";
 import AppError from "../utils/appError";
 import authMiddleware from "../middleware/authmiddleware";
 import applicantMiddleware from "../middleware/applicantMiddleware";
+import Applicant from "../models/applicantModel";
+import organizationMiddleware from "../middleware/organizationMiddleware";
+import { Console } from "console";
 
 const applicationRouter = express.Router();
 
@@ -27,17 +29,19 @@ applicationRouter.get(
 
 applicationRouter.post(
   "/jobs/:jobId",
-  [authMiddleware],
+  [authMiddleware,applicantMiddleware],
   catchasync(async (req: Request, res: Response, next: NextFunction) => {
-    const { coverLetter, expectedSalary, status } = req.body;
+    const { coverLetter, expectedSalary } = req.body;
     const { jobId } = req.params;
     console.log(req.user,'user from auth middleware')
     const userId = req.user?._id as any;
+    console.log("userId",userId)
 
     console.log(userId,'user id')
-      const foundApplicant = await applicant.findOne({
+      const foundApplicant = await Applicant.findOne({
           user: userId,
         });
+        
     if (!foundApplicant) {
       return next(new AppError("applicant not found", 404));
     }
@@ -75,10 +79,23 @@ applicationRouter.post(
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 applicationRouter.get(
-  "/my-appliedjob",
+  "/user/:id",
+  authMiddleware,
   async (req: Request, res: Response, next: NextFunction) => {
-    const userId = req.user?._id;
-    const foundApplication = await Application.find({ applicantId: userId });
+    const userId = req.params.id;
+    console.log(req.params,"params")
+    console.log(userId,"user id")
+    const foundApplicant = await Applicant.findOne({
+      user:userId
+    })
+    console.log(foundApplicant,"foundAPPLicant")
+    
+    
+    if(!foundApplicant){
+     return next(new AppError('Applicant not found',404))
+    }
+    const foundApplication = await Application.find({ applicantId: foundApplicant._id }).populate("jobId");
+    console.log(foundApplication,"found applied aplication")
     if (!foundApplication) {
       return next(new AppError("application to fetch error", 404));
     }
@@ -95,7 +112,48 @@ applicationRouter.get(
   authMiddleware,
   catchasync(async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
-    const foundApplication = await Application.findById(id);
+    const foundApplication = await Application.findById(id).populate("jobId");
+    if (!foundApplication) {
+      return next(new AppError("application not found", 404));
+    }
+    res.send(foundApplication);
+  })
+);
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+applicationRouter.get(
+  "/job/:jobId",
+  authMiddleware,
+  catchasync(async (req: Request, res: Response, next: NextFunction) => {
+    const jobId = req.params.jobId;
+    const id = req.params.id
+    const foundApplicant = await Applicant.findById(id)
+    console.log(foundApplicant,"found applicant")
+    const foundApplication = await Application.find({jobId}).populate("applicantId","firstName lastName email").populate("jobId")
+    console.log("foundApplication",foundApplication)
+    if (!foundApplication) {
+      return next(new AppError("application not found", 404));
+    }
+    res.send(foundApplication);
+  })
+);
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+applicationRouter.get(
+  "/organization/:organizationId",
+  authMiddleware,
+  catchasync(async (req: Request, res: Response, next: NextFunction) => {
+    const id = req.params.organizationId;
+    const foundApplication = await Application.find({organization:id}).populate("jobId").populate("userId");
     if (!foundApplication) {
       return next(new AppError("application not found", 404));
     }
@@ -114,6 +172,7 @@ applicationRouter.patch(
     const id = req.params.id;
     const data: Partial<IApplication> = req.body;
     const foundApplication = await Application.findById(id);
+    console.log("foundede application",foundApplication)
     if (!foundApplication) {
       return next(new AppError("application not found", 404));
     }
@@ -134,31 +193,34 @@ applicationRouter.patch(
 
 applicationRouter.patch(
   "/:id/status",
-  [authMiddleware, applicantMiddleware],
+  authMiddleware, 
   catchasync(async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
-
-    const { status, role } = req.body;
+    const status = req.body?.status;
 
     const foundApplication = await Application.findById(id);
     if (!foundApplication) {
       return next(new AppError("application not found", 404));
     }
 
+    const role = req.user?.role;
     if (role !== "organization") {
       return res.status(403).json({
-        message: "only can changed status by organization",
+        message: "Only organization can change status",
         success: false,
       });
     }
-    const updatedStatus = await Application.findByIdAndUpdate(
+
+    const updatedApplication = await Application.findByIdAndUpdate(
       id,
       { status },
       { returnDocument: "after" }
     );
-    res.status(403).json({ message: updatedStatus, success: true });
+
+    res.status(200).json({ application: updatedApplication,message:"Application status updated successfully", success: true });
   })
 );
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -166,10 +228,11 @@ applicationRouter.patch(
 
 applicationRouter.delete(
   "/:id",
-  [applicantMiddleware, authMiddleware],
+  [ authMiddleware,applicantMiddleware],
   catchasync(async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
     const foundApplication = await Application.findById(id);
+    console.log("found application",foundApplication)
     if (!foundApplication) {
       return res.status(404).json({
         message: "",

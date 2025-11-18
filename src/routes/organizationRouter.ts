@@ -3,7 +3,7 @@ import Organization, { IOrganization } from "../models/organizationModel";
 import authMiddleware from "../middleware/authmiddleware";
 import catchasync from "../utils/catchasync";
 import AppError from "../utils/appError";
-import User from "../models/userModel";
+import organizationMiddleware from "../middleware/organizationMiddleware";
 
 const organizationRouter = express.Router();
 
@@ -13,15 +13,32 @@ const organizationRouter = express.Router();
 
 organizationRouter.get(
   "/",
+  [authMiddleware],
   catchasync(async (req: Request, res: Response) => {
-    const foundOrganizations = await Organization.find();
-    res.status(200).json({
-      success: true,
-      message: "organizzation fetch successfully",
-      data: foundOrganizations,
-    });
+    const user = req.user
+    console.log(user,'user')
+     const {admin} = req.query
+     if(user?.role === "admin"){
+      const foundAllOrganizations = await Organization.find()
+    return  res.send({message:"found all organizatioin by super admin",foundAllOrganizations,success:true})
+     }
+     else if (user?.role === "organization") {
+      const foundOrganizations = await Organization.find({ admin: user?._id });
+      return res.send({
+        message: "found organizations by organization admin",
+        foundOrganizations,
+        success: true,
+      });
+    } else {
+      return res.status(403).send({
+        message: " only organization role allowed",
+        success: false,
+      });
+    }
   })
 );
+
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -60,10 +77,12 @@ organizationRouter.post(
 organizationRouter.patch(
   "/:id",
   authMiddleware,
+  organizationMiddleware,
   catchasync(async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
     const data: Partial<IOrganization> = req.body;
     const foundOrganization = await Organization.findById(id);
+    console.log("organizationsss",foundOrganization)
     if (!foundOrganization) {
       return next(new AppError("organization not found", 404));
     }
@@ -83,16 +102,17 @@ organizationRouter.patch(
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 organizationRouter.patch(
-  "/status/:id",
+  "/:id/status",
   authMiddleware,
+  
   catchasync(async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
-    const { role, status }: { role: string; status: string } = req.body;
+    const {  status }= req.body;
     const foundOrganization = await Organization.findById(id);
     if (!foundOrganization) {
       return next(new AppError("organization not found", 404));
     }
-    if (role !== "admin") {
+    if (req.user?.role !== "admin") {
       return next(new AppError("only admin can change role", 403));
     }
     const updatedStatus = await Organization.findByIdAndUpdate(
@@ -122,7 +142,7 @@ organizationRouter.get(
 
 
 organizationRouter.get(
-  "/user/:userId",
+  "/users/:userId",
   catchasync(async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.userId;
     const foundOrganizations = await Organization.findOne({
@@ -144,7 +164,7 @@ organizationRouter.delete(
   authMiddleware,
   catchasync(async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
-    const { role }: { role: string } = req.body;
+    const role = req.user?.role
     if (role !== "admin") {
       return next(new AppError("only can be deleted by admin", 403));
     }

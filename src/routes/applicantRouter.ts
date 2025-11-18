@@ -8,16 +8,16 @@ import authMiddleware from "../middleware/authmiddleware";
 
 const applicantRouter = express.Router();
 
-applicantRouter.get(
-  "/checkApplicantInflrmation",
-  async (req: Request, res: Response) => {
-    const applicantId = req.user?._id;
-    const foundApplicant = await Applicant.findOne({ user: applicantId });
-    if (foundApplicant) {
-    }
-    res.send(foundApplicant);
-  }
-);
+// applicantRouter.get(
+//   "/checkApplicantInformation",
+//   async (req: Request, res: Response) => {
+//     const applicantId = req.user?._id;
+//     const foundApplicant = await Applicant.findOne({ user: applicantId });
+//     if (foundApplicant) {
+//     }
+//     res.send(foundApplicant);
+//   }
+// );
 
 applicantRouter.post(
   "/",
@@ -33,8 +33,8 @@ applicantRouter.post(
       experience,
     } = req.body;
     const foundApplicant = await Applicant.findOne({ contactNumber });
-    // console.log(foundApplicant, "foundapplicantss");
-
+    // console.log(foundApplicant, "foundapplicantss");  
+      
     if (foundApplicant) {
       return next(new AppError("applicant already exists", 400));
     }
@@ -64,7 +64,7 @@ applicantRouter.post(
       "/users/:userId",
       async (req: Request, res: Response, next: NextFunction) => {
         const id = req.params.userId;
-        const foundApplicant = await applicant.findOne({
+        const foundApplicant = await Applicant.findOne({
           user: id,
         });
         if (!foundApplicant) {
@@ -78,7 +78,7 @@ applicantRouter.post(
       "/:id",
       async (req: Request, res: Response, next: NextFunction) => {
         const id = req.params.id;
-        const foundApplicant = await applicant.findById(id);
+        const foundApplicant = await Applicant.findById(id);
         if (!foundApplicant) {
           return next(new AppError("applicant not found", 404));
         }
@@ -86,16 +86,21 @@ applicantRouter.post(
       }
     );
 
+
+    
+
     applicantRouter.patch(
-      "/:id",
+      "/users/:userId",
       async (req: Request, res: Response, next: NextFunction) => {
-        const id = req.params.id;
+        const id = req.params.userId;
+        console.log("ids",id)
         const data = req.body;
-        const foundApplicant = await applicant.findById(id);
+        console.log(data,"data")
+        const foundApplicant = await Applicant.findOne({user:id});
         if (!foundApplicant) {
           return next(new AppError("applicant not found", 404));
         }
-        const updatedApplicant = await applicant.findByIdAndUpdate(id, data, {
+        const updatedApplicant = await Applicant.findByIdAndUpdate(foundApplicant.id, data, {
           returnDocument: "after",
         });
         res.send({

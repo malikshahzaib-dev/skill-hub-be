@@ -13,11 +13,30 @@ const jobRouter = express.Router();
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 jobRouter.get(
-  "/job",
+  "/",
   catchasync(async (req: Request, res: Response) => {
-    const foundJobs = await Job.find();
-    res.send({message:"foundJobs",foundJobs,success:true});
-    console.log("foundJobs", foundJobs);
+    const { createdBy,jobTitle } = req.query;
+    if (jobTitle) {
+      const findJob = await Job.find({ jobTitle:{$regex:jobTitle, $options:"i"} });
+      return res.send({
+        // message: "found jobs by jobTitle",
+        findJob,
+        success: true,
+      });
+    } else if (createdBy) {
+      const foundJobsCreatedBy = await Job.find({ createdBy });
+      console.log("foundjob createdBy", foundJobsCreatedBy);
+      return res.send({
+        // message: "foundjobs createdBy",
+        foundJobsCreatedBy,
+        success: true,
+      });
+    } else {
+      const foundJobs = await Job.find();
+      res.send({ 
+        // message: "foundJobs",
+         foundJobs, success: true });
+    }
   })
 );
 
@@ -56,11 +75,10 @@ jobRouter.post(
       applicationclosingdate,
       benefits,
       department,
-      responsibilities,   
+      responsibilities,
       requirements,
       location,
-      jobType
-
+      jobType,
     } = req.body;
     console.log("req.body", req.body);
     console.log("req.params", req.params.organizationId);
@@ -74,7 +92,7 @@ jobRouter.post(
       return res.send({ message: "organization is not approved " });
     }
 
-    const foundJob = await Job.findOne({ jobTitle });    
+    const foundJob = await Job.findOne({ jobTitle });
     if (foundJob) {
       return next(new AppError("job already exists", 400));
     }
@@ -92,18 +110,15 @@ jobRouter.post(
       department,
       responsibilities,
       requirements,
-      jobType
+      jobType,
     });
     console.log("createdJob", createdJob);
-    res
-      .status(201)
-      .json({
-        data: createdJob,
-        message: "job creation successful",
-        success: true,
-
-      });
-      console.log(createdJob,"createdJob");
+    res.status(201).json({
+      data: createdJob,
+      message: "job creation successful",
+      success: true,
+    });
+    console.log(createdJob, "createdJob");
   })
 );
 
@@ -113,18 +128,17 @@ jobRouter.post(
 
 jobRouter.patch(
   "/:id",
-  [authMiddleware,organizationMiddleware],
+  [authMiddleware, organizationMiddleware],
   catchasync(async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
     const data: Partial<IJob> = req.body;
-    const { role }: { role: string } = req.body;
-    if (role !== "organization admin") {
-      return res
-        .status(403)
-        .json({
-          message: "job only can be updated by organization admin",
-          success: false,
-        });
+    const role = req.user?.role;
+    console.log("organization role", role);
+    if (role !== "organization") {
+      return res.status(403).json({
+        message: "job only can be updated by organization admin",
+        success: false,
+      });
     }
     const foundJob = await Job.findById(id);
     if (!foundJob) {
@@ -133,7 +147,11 @@ jobRouter.patch(
     const updatedJob = await Job.findByIdAndUpdate(id, data, {
       returnDocument: "after",
     });
-    res.send({meassage:"updatedJob successfully",updatedJob,success:true});
+    res.send({
+      meassage: "updatedJob successfully",
+      updatedJob,
+      success: true,
+    });
   })
 );
 
@@ -143,29 +161,25 @@ jobRouter.patch(
 
 jobRouter.delete(
   "/:id",
-  [authMiddleware,organizationMiddleware],
+  [authMiddleware, organizationMiddleware],
   catchasync(async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
-    const { role }: { role: string } = req.body;
-    if (role !== "organization admin") {
-      return res
-        .status(403)
-        .json({
-          message: "job only can be created by organization admin",
-          success: false,
-        });
+    const role = req.user?.role;
+    console.log(role, "role");
+    if (role !== "organization") {
+      return res.status(403).json({
+        message: "job only can be deleted by organization admin",
+        success: false,
+      });
     }
     const foundJob = await Job.findById(id);
+    console.log("fetch job for deleted", foundJob);
     if (!foundJob) {
       return next(new AppError("job not found", 404));
     }
     const deletedJob = await Job.findByIdAndDelete(id);
-    res.send({message:"job deleted success fully",deletedJob});
+    res.send({ message: "job deleted success fully", deletedJob });
   })
 );
 
-
 export default jobRouter;
-
-
-
