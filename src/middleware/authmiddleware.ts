@@ -17,7 +17,7 @@ const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunctio
     const token = authHeader.split(" ")[1];
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
-
+   
     // Find user in DB
     const user = await User.findById(decoded.id);
     if (!user) {

@@ -19,11 +19,11 @@ app.use(express.json());
 app.use("/api", router);
 
 
-const upload = multer({dest:"upload/"})
-app.post("/upload",upload.single("file"),(req,res) => {
-    console.log("single file",req.file)
-    res.send("single file uploaded successfully")
-})
+// const upload = multer({dest:"upload/"})
+// app.post("/upload",upload.single("file"),(req,res) => {
+//     console.log("single file",req.file)
+//     res.send("single file uploaded successfully")
+// })
 
 app.get("/", (req: Request, res: Response) => {
     res.send("Server is online");

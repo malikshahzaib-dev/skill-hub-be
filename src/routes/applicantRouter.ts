@@ -8,16 +8,6 @@ import authMiddleware from "../middleware/authmiddleware";
 
 const applicantRouter = express.Router();
 
-// applicantRouter.get(
-//   "/checkApplicantInformation",
-//   async (req: Request, res: Response) => {
-//     const applicantId = req.user?._id;
-//     const foundApplicant = await Applicant.findOne({ user: applicantId });
-//     if (foundApplicant) {
-//     }
-//     res.send(foundApplicant);
-//   }
-// );
 
 applicantRouter.post(
   "/",
@@ -33,7 +23,6 @@ applicantRouter.post(
       experience,
     } = req.body;
     const foundApplicant = await Applicant.findOne({ contactNumber });
-    // console.log(foundApplicant, "foundapplicantss");  
       
     if (foundApplicant) {
       return next(new AppError("applicant already exists", 400));

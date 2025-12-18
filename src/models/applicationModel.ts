@@ -9,6 +9,9 @@ export interface IApplication extends Document {
     status: string,
     coverLetter:string,
     expectedSalary:number,
+    address:string
+    phone:number,
+    dateOfBirth:Date
 
 }
 
@@ -17,6 +20,9 @@ const applicationSchema = new Schema<IApplication>({
     applicantId:{type:Schema.Types.ObjectId,ref:"Applicant",required:true},
     coverLetter:{type:String},
     expectedSalary:{type:Number},
+    address:{type:String},
+    dateOfBirth:{type:Date},
+    phone:{type:Number},
     status: {
    type: String,
    enum: ["pending", "approved", "rejected", "hired"], default: "pending"}

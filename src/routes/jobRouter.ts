@@ -5,6 +5,7 @@ import Organization from "../models/organizationModel";
 import catchasync from "../utils/catchasync";
 import AppError from "../utils/appError";
 import organizationMiddleware from "../middleware/organizationMiddleware";
+import Application from "../models/applicationModel";
 
 const jobRouter = express.Router();
 
@@ -15,9 +16,12 @@ const jobRouter = express.Router();
 jobRouter.get(
   "/",
   catchasync(async (req: Request, res: Response) => {
-    const { createdBy,jobTitle } = req.query;
+    const { createdBy, jobTitle } = req.query;
+    // const {jobId} = req.body
     if (jobTitle) {
-      const findJob = await Job.find({ jobTitle:{$regex:jobTitle, $options:"i"} });
+      const findJob = await Job.find({
+        jobTitle: { $regex: jobTitle, $options: "i" },
+      });
       return res.send({
         // message: "found jobs by jobTitle",
         findJob,
@@ -25,23 +29,34 @@ jobRouter.get(
       });
     } else if (createdBy) {
       const foundJobsCreatedBy = await Job.find({ createdBy });
-      console.log("foundjob createdBy", foundJobsCreatedBy);
+
+      const countApplications = await Promise.all(
+        foundJobsCreatedBy.map(async (job: any) => {
+          const count = await Application.countDocuments({ jobId: job._id });
+          return {
+            ...job._doc,
+            applicationCount: count,
+          };
+        })
+      );
+
       return res.send({
-        // message: "foundjobs createdBy",
-        foundJobsCreatedBy,
+        foundJobsCreatedBy: countApplications,
         success: true,
       });
     } else {
       const foundJobs = await Job.find();
-      res.send({ 
+      res.send({
         // message: "foundJobs",
-         foundJobs, success: true });
+        foundJobs,
+        success: true,
+      });
     }
   })
 );
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 jobRouter.get(
@@ -89,7 +104,7 @@ jobRouter.post(
     const foundOrganization = await Organization.findById(organizationId);
     console.log("foundOrganization", foundOrganization);
     if (!foundOrganization || foundOrganization.status !== "approved") {
-      return res.send({ message: "organization is not approved " });
+    return next(new AppError('Organization is not approved yet',202))
     }
 
     const foundJob = await Job.findOne({ jobTitle });

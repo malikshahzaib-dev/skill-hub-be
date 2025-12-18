@@ -25,7 +25,7 @@ organizationRouter.get(
      else if (user?.role === "organization") {
       const foundOrganizations = await Organization.find({ admin: user?._id });
       return res.send({
-        message: "found organizations by organization admin",
+        message: "found organization by organization admin",
         foundOrganizations,
         success: true,
       });
@@ -47,6 +47,7 @@ organizationRouter.get(
 organizationRouter.post(
   "/",
   authMiddleware,
+  organizationMiddleware,
   catchasync(async (req: Request, res: Response, next: NextFunction) => {
     const data: IOrganization = req.body;
     const organizationId = (req as any).user.id;
@@ -65,7 +66,7 @@ organizationRouter.post(
     });
     res.status(200).json({
       data: createdOrganization,
-      message: "organization creatio successfull",
+      message: "organization creation successfull",
     });
   })
 );
@@ -82,7 +83,7 @@ organizationRouter.patch(
     const id = req.params.id;
     const data: Partial<IOrganization> = req.body;
     const foundOrganization = await Organization.findById(id);
-    console.log("organizationsss",foundOrganization)
+    console.log("organizations",foundOrganization)
     if (!foundOrganization) {
       return next(new AppError("organization not found", 404));
     }
@@ -90,7 +91,7 @@ organizationRouter.patch(
       returnDocument: "after",
     });
     res.status(200).json({
-      message: "organization update successfull",
+      message: "organization updated successfully",
       organization: updatedOrganization,
       status: "success",
     });
@@ -132,11 +133,11 @@ organizationRouter.get(
   "/:id",
   catchasync(async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id;
-    const foundOrganizations = await Organization.findById(id);
-    if (!foundOrganizations) {
+    const foundOrganization = await Organization.findById(id);
+    if (!foundOrganization) {
       return next(new AppError("organization not found", 404));
     }
-    res.send(foundOrganizations);
+    res.send(foundOrganization);
   })
 );
 
