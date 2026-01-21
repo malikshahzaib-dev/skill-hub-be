@@ -11,7 +11,7 @@ import OTP from "../models/otpModel";
     await OTP.create({email , otp:otp.toString(), expiresAt:expiresAt})
   
     return otp
-
+  
 }
 
 export const checkOtpExistss = async(email:string,otp:number):Promise<boolean> => {

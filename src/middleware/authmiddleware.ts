@@ -1,16 +1,16 @@
 import { Request, Response, NextFunction } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import User from "../models/userModel"; // adjust path to your User model
+import User from "../models/userModel"; 
 import AppError from "../utils/appError";
 
 interface AuthRequest extends Request {
-  user?: any; // you can type this properly with your User model if using TypeScript
+  user?: any; 
 }
 
 const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!authHeader || !authHeader.startsWith("Bearer")) {
       return next(new AppError("No token provided", 401));
     }
 

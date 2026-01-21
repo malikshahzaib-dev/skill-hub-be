@@ -18,7 +18,7 @@ const userRouter = express.Router();
 userRouter.post(
   "/login",
   catchasync(async (req: Request, res: Response, next: NextFunction) => {
-    const { email, password, role } = req.body;
+    const { email, password } = req.body;
     
     const hashPassword = md5(password);
     console.log(hashPassword,"hashpassword")
@@ -27,7 +27,6 @@ userRouter.post(
     if (!foundUser) {
       return next(new AppError("invalid credentials", 401));
     }
-          //  const isInformationCompleted = Boolean(foundUser?.education && foundUser.contactNumber && foundUser.experience && foundUser.skills && foundUser.dateofBirth && foundUser.resume)
    
 
     const token = jwt.sign(
